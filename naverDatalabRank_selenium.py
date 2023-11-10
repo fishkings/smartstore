@@ -17,12 +17,13 @@ import random
 import pyautogui
 
 num = int(pyautogui.prompt("첫 번째 카테고리 번호를 입력하세요."))
+page = int(pyautogui.prompt("몇 페이지까지 크롤링 할지 입력하세요. (최대 25)"))
 
 wb = Workbook()
 sheet = wb.active
 
-def most_searching(total_lst,found_error):
-    for i in range(25) :  # 버튼이 25개
+def most_searching(total_lst,found_error,page):
+    for i in range(page) :  # 버튼이 25개
         if driver.find_elements(By.CSS_SELECTOR, ".rank_top1000 .link_text"):
             ranks = driver.find_elements(By.CSS_SELECTOR, ".rank_top1000 .link_text")
             time.sleep(.6)  # 이거 조절 안하면 오버래핑  -> 21\n  이런식으로 나옴
@@ -49,8 +50,6 @@ def most_searching(total_lst,found_error):
 def insite_title() :
     time.sleep(.4)
     return driver.find_element(By.CSS_SELECTOR, ".section .insite_title strong").text
-
-
 
 # 브라우져 꺼짐 방지
 chrome_options = Options()
@@ -108,7 +107,7 @@ for idx_s,second_option  in enumerate(second_options):
             total_lst = []
             total_lst.append(insite_title())
 
-            most_searching(total_lst,found_error) # 대표 타이틀 / 인기 검색어 불러오기
+            most_searching(total_lst,found_error,page) # 대표 타이틀 / 인기 검색어 불러오기
             print(len(total_lst))
             sheet.append(list(total_lst))
 
@@ -118,7 +117,7 @@ for idx_s,second_option  in enumerate(second_options):
             print(insite_title())
             driver.find_elements(By.CSS_SELECTOR,".btn_submit")[0].click()
             total_lst.append(insite_title())
-            most_searching(total_lst,found_error) # 대표 타이틀 / 인기 검색어 불러오기
+            most_searching(total_lst,found_error,page) # 대표 타이틀 / 인기 검색어 불러오기
             sheet.append(total_lst)
 
-wb.save(f"네이버쇼핑몰크롤링\Category{num}_search.csv")
+wb.save(f"primary_category_csv/top20_keywords/Category{num}_search_top{page*20}.csv")
