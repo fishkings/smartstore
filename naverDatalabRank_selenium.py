@@ -15,12 +15,15 @@ import time
 import csv
 import random
 import pyautogui
+import pandas as pd
 
-num = int(pyautogui.prompt("첫 번째 카테고리 번호를 입력하세요."))
+num = int(pyautogui.prompt("첫 번째 카테고리 번호를 입력하세요.(0부터 시작)"))
 page = int(pyautogui.prompt("몇 페이지까지 크롤링 할지 입력하세요. (최대 25)"))
 
-wb = Workbook()
-sheet = wb.active
+# wb = Workbook()
+# sheet = wb.active
+
+sheet = []
 
 def most_searching(total_lst,found_error,page):
     for i in range(page) :  # 버튼이 25개
@@ -101,7 +104,7 @@ for idx_s,second_option  in enumerate(second_options):
             driver.execute_script('arguments[0].click();',third_option)
             time.sleep(time_randome)
             driver.find_elements(By.CSS_SELECTOR,".btn_submit")[0].click()
-            time.sleep(time_randome)
+            time.sleep(0.4)
             print(f"{num} - {idx_s} - {idx_t} {insite_title()} 항목")
 
             total_lst = []
@@ -120,4 +123,8 @@ for idx_s,second_option  in enumerate(second_options):
             most_searching(total_lst,found_error,page) # 대표 타이틀 / 인기 검색어 불러오기
             sheet.append(total_lst)
 
-wb.save(f"primary_category_csv/top20_keywords/Category{num}_search_top{page*20}.csv")
+sheet = pd.DataFrame(sheet)
+sheet.to_csv(f"primary_category_csv/top20_keywords/category{num}_search_top{page*20}.csv",
+            index = False, header=False,
+            encoding='utf-8-sig')
+# wb.save(f"primary_category_csv/top20_keywords/category{num}_search_top{page*20}.csv", encoding="utf-8")

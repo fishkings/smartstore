@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 import time
 import numpy as np
+import pandas as pd 
 
 
 cookies = {
@@ -37,36 +38,13 @@ headers = {
 }
 
 
-# for i in range(10000):
+df_keyword = pd.read_csv("primary_category_csv/cid/cid_keyword.csv",index_col=False)
+df_keyword.columns = ["cid","title"]
+i = 0 
+while(True):
 
-#     data = {
-#         'cid': str(50000000 + i),
-#         'timeUnit': 'date',
-#         'startDate': '2023-10-09',
-#         'endDate': '2023-11-09',
-#         'age': '',
-#         'gender': '',
-#         'device': '',
-#         'page': '1',
-#         'count': '20',
-#     }
-
-#     time.sleep(np.random.rand())
-
-#     response = requests.post(
-#       'https://datalab.naver.com/shoppingInsight/getCategoryClickTrend.naver',
-#         cookies=cookies,
-#         headers=headers,
-#         data=data,
-#     )
-
-#     data = json.loads(response.text)
-
-#     print(f"{data['result'][0]['title']}")
-
-
-data = {
-        'cid': "50000035",
+    data = {
+        'cid': str(50015341 + i),
         'timeUnit': 'date',
         'startDate': '2023-10-09',
         'endDate': '2023-11-09',
@@ -77,62 +55,24 @@ data = {
         'count': '20',
     }
 
-response = requests.post(
-    'https://datalab.naver.com/shoppingInsight/getCategoryKeywordRank.naver',
-    cookies=cookies,
-    headers=headers,
-    data=data,
-)
+    time.sleep(np.random.rand())
 
-keyword_ranks = json.loads(response.text)
-print(f"{keyword_ranks}")
+    response = requests.post(
+      'https://datalab.naver.com/shoppingInsight/getCategoryClickTrend.naver',
+        cookies=cookies,
+        headers=headers,
+        data=data,
+    )
+
+    keywords = json.loads(response.text)
+    print(keywords['result'][0]['fullTitle'])
     
-
-# response = requests.post(
-#     'https://datalab.naver.com/shoppingInsight/getCategoryKeywordRank.naver',
-#     cookies=cookies,
-#     headers=headers,
-#     data=data,
-# )
-# keyword_ranks = json.loads(response.text)
-
-# print(f"{keyword_ranks}")
-
-
+    if keywords['result'][0]['fullTitle'] != None :
+        print(f"{i} {keywords['result'][0]['title']}  --- {data['cid']} ")
+        new_row = pd.Series({'cid': data['cid'],'title':keywords['result'][0]['title']})
+        df_keyword = pd.concat([df_keyword,new_row.to_frame().T], ignore_index=True)
+        df_keyword.to_csv("primary_category_csv/cid/cid_keyword.csv",index=False)
    
-
-# page = 25 
-# num = 1
-# for i in range(1,26):
-#     data = {
-#         'cid': '50000393',
-#         'timeUnit': 'date',
-#         'startDate': '2023-10-09',
-#         'endDate': '2023-11-09',
-#         'age': '',
-#         'gender': '',
-#         'device': '',
-#         'page': i,
-#         'count': '20',
-#     }
-
-#     time.sleep(np.random.rand())
-
-#     response = requests.post(
-#         'https://datalab.naver.com/shoppingInsight/getCategoryKeywordRank.naver',
-#         cookies=cookies,
-#         headers=headers,
-#         data=data,
-#     )
-#     # print(response.text)
-
-#     keyword_ranks = json.loads(response.text)
-
-#     for idx,keyword_rank in enumerate(keyword_ranks["ranks"]):
-#         print(f"{num}. {keyword_rank['keyword']}")
-#         num += 1
-
-
-
+    i += 1
 
 
