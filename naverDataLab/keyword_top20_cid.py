@@ -3,8 +3,11 @@ from bs4 import BeautifulSoup
 import json
 import time
 import numpy as np
-import pandas as pd 
+import pandas as pd
 
+
+cids = pd.read_csv(r"primary_category_csv/cid/cid_keyword.csv")
+df_keyword = pd.DataFrame()
 
 cookies = {
     'NNB': '6TTK2RJU3JPWG',
@@ -38,13 +41,14 @@ headers = {
 }
 
 
-df_keyword = pd.read_csv("primary_category_csv/cid/cid_keyword.csv",index_col=False)
-df_keyword.columns = ["cid","title"]
-i = 0 
-while(True):
+
+# cid를 추출해서 top 20까지 출력
+for idx,cid in enumerate(cids["cid"]):
+
+    keyword_lst = []
 
     data = {
-        'cid': str(50015341 + i),
+        'cid': cid,
         'timeUnit': 'date',
         'startDate': '2023-10-09',
         'endDate': '2023-11-09',
@@ -58,21 +62,92 @@ while(True):
     time.sleep(np.random.rand())
 
     response = requests.post(
-      'https://datalab.naver.com/shoppingInsight/getCategoryClickTrend.naver',
+      'https://datalab.naver.com/shoppingInsight/getCategoryKeywordRank.naver',
         cookies=cookies,
         headers=headers,
         data=data,
     )
 
     keywords = json.loads(response.text)
-    print(keywords['result'][0]['fullTitle'])
-    
-    if keywords['result'][0]['fullTitle'] != None :
-        print(f"{i} {keywords['result'][0]['title']}  --- {data['cid']} ")
-        new_row = pd.Series({'cid': data['cid'],'title':keywords['result'][0]['title']})
-        df_keyword = pd.concat([df_keyword,new_row.to_frame().T], ignore_index=True)
-        df_keyword.to_csv("primary_category_csv/cid/cid_keyword.csv",index=False)
-   
-    i += 1
 
+    for idx,rank in enumerate(keywords["ranks"]):
+        keyword_lst.append(rank['keyword'])
+
+    new_row = pd.Series(keyword_lst)
+    df_keyword = pd.concat([df_keyword,new_row.to_frame().T], ignore_index=True)
+    df_keyword.to_csv("primary_category_csv/top20_keywords/category_search_top20.csv",index=False)
+
+
+
+# 누락된 cid 추출 확인
+# cid = pd.read_csv("primary_category_csv/cid/cid_keyword.csv",index_col=0)
+# keyword = pd.read_csv("primary_category_csv/top20_keywords/category_search_top20.csv")
+# keyword.index = cid.index
+
+# for cid in keyword[keyword.isnull().any(axis=1)].index:
+
+#     keyword_lst = []
+
+#     data = {
+#         'cid': cid,
+#         'timeUnit': 'date',
+#         'startDate': '2023-10-09',
+#         'endDate': '2023-11-09',
+#         'age': '',
+#         'gender': '',
+#         'device': '',
+#         'page': '1',
+#         'count': '20',
+#     }
+
+#     time.sleep(np.random.rand())
+
+
+# # getCategoryClickTrend
+# # getCategoryKeywordRank
+#     response = requests.post(
+#       'https://datalab.naver.com/shoppingInsight/getCategoryClickTrend.naver',
+#         cookies=cookies,
+#         headers=headers,
+#         data=data,
+#     )
+
+#     keywords = json.loads(response.text)
+
+
+#     print(keywords["result"][0]["fullTitle"])
+#     keyword.dropna(inplace=True)
+
+#     keyword.to_csv("primary_category_csv/top20_keywords/category_search_top20.csv")
+
+
+    """누락된 값들을 확인해보면 크게 의미없는 것들이므로 누락 행 제거. (인기없는)
+
+    면세점 > 패션/잡화 > 신발
+    면세점 > 패션/잡화 > 언더웨어
+    면세점 > 패션/잡화 > 우산/양산
+    면세점 > 패션/잡화 > 여행소품
+    면세점 > 전자제품 > 노트북/주변기기
+    면세점 > 시계/기프트 > 라이터
+    면세점 > 시계/기프트 > 크리스탈
+    면세점 > 시계/기프트 > 수첩/다이어리
+    면세점 > 주얼리 > 발찌
+    면세점 > 주얼리 > 헤어
+    면세점 > 주얼리 > 넥타이핀
+    면세점 > 주얼리 > 장식소품
+    디지털/가전 > 생활가전 > 스탠드 > 칠파장스탠드
+    면세점 > 화장품 > 스킨케어 > 스페셜케어
+    면세점 > 화장품 > 메이크업 > 네일메이크업
+    면세점 > 패션/잡화 > 가방 > 소품/기타
+    면세점 > 패션/잡화 > 지갑 > 소품지갑
+    디지털/가전 > PC액세서리 > USB액세서리 > USB토이
+    디지털/가전 > 멀티미디어장비 > DVR > DVR카드
+    면세점 > 전자제품 > MP3/이어폰/헤드폰 > MP3/PMP
+    디지털/가전 > 저장장치 > 공미디어 > 미디어전용라벨
+    화장품/미용 > 선케어 > 태닝 > 태닝티슈
+    도서 > 사회/정치 > 사회복지 > 여성복지
+    도서 > 잡지 > 컴퓨터/게임/그래픽 > 그래픽
+    도서 > 잡지 > 컴퓨터/게임/그래픽 > 웹
+
+    """
 
