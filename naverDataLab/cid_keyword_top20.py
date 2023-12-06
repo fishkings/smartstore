@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-cids = pd.read_csv(r"primary_category_csv/cid/cid_keyword.csv")
-df_keyword = pd.DataFrame()
+cids = pd.read_csv(r"primaryCategoryDate/cid_life_keyword.csv")
 
 cookies = {
     'NNB': '6TTK2RJU3JPWG',
@@ -42,16 +41,23 @@ headers = {
 
 
 
+startDate = '2022-12-06'
+endDate = '2023-12-06'
+
+df_keyword = pd.read_csv("primaryCategoryDate/231206_cid_keyword/category_search_top20_231206.csv")
+num = 2
+
+
 # cid를 추출해서 top 20까지 출력
-for idx,cid in enumerate(cids["cid"]):
+for idx,cid in enumerate(cids["cid"][num-2:]):
 
     keyword_lst = []
 
     data = {
         'cid': cid,
         'timeUnit': 'date',
-        'startDate': '2023-10-09',
-        'endDate': '2023-11-09',
+        'startDate': startDate,  
+        'endDate': endDate,
         'age': '',
         'gender': '',
         'device': '',
@@ -74,8 +80,9 @@ for idx,cid in enumerate(cids["cid"]):
         keyword_lst.append(rank['keyword'])
 
     new_row = pd.Series(keyword_lst)
-    df_keyword = pd.concat([df_keyword,new_row.to_frame().T], ignore_index=True)
-    df_keyword.to_csv("primary_category_csv/top20_keywords/category_search_top20.csv",index=False)
+    print(new_row.to_frame().T)
+    df_keyword = pd.concat([df_keyword,new_row.to_frame().T], axis=0,ignore_index=True)
+    df_keyword.to_csv("primaryCategoryDate/231206_cid_keyword/category_search_top20_231206.csv",index=False)
 
 
 
@@ -121,7 +128,7 @@ for idx,cid in enumerate(cids["cid"]):
 #     keyword.to_csv("primary_category_csv/top20_keywords/category_search_top20.csv")
 
 
-    """누락된 값들을 확인해보면 크게 의미없는 것들이므로 누락 행 제거. (인기없는)
+"""누락된 값들을 확인해보면 크게 의미없는 것들이므로 누락 행 제거. (인기없는)
 
     면세점 > 패션/잡화 > 신발
     면세점 > 패션/잡화 > 언더웨어
