@@ -1,3 +1,5 @@
+"""CID TITLE 추출"""
+
 import requests
 from bs4 import BeautifulSoup
 import json
